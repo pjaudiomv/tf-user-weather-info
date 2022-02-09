@@ -14,12 +14,12 @@ locals {
 
   location_response = jsondecode(data.http.fetch_location.body)
   location_map = {
-    lat     = local.location_response["latitude"],
-    lon     = local.location_response["longitude"],
+    lat     = local.location_response["lat"],
+    lon     = local.location_response["lon"],
     city    = local.location_response["city"],
     region  = local.location_response["region"],
-    country = local.location_response["country_code"],
-    ip      = local.location_response["ip"],
+    country = local.location_response["countryCode"],
+    ip      = local.location_response["query"],
   }
   location_str = "${local.location_map.city}, ${local.location_map.region}, ${local.location_map.country}"
 

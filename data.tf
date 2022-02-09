@@ -1,5 +1,5 @@
 data "http" "fetch_location" {
-  url = "https://ipwhois.app/json/"
+  url = "http://ip-api.com/json/"
   request_headers = {
     Accept = "application/json"
   }
