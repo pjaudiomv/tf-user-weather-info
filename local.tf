@@ -1,18 +1,11 @@
 locals {
-  location_url = "https://www.metaweather.com/api/location/search/?lattlong=${local.location_map.lat},${local.location_map.lon}"
+  weather_url  = "https://api.open-meteo.com/v1/forecast?latitude=${local.location_map.lat}&longitude=${local.location_map.lon}&current=temperature_2m,weather_code&hourly=temperature_2m&temperature_unit=fahrenheit"
+  weather_data = jsondecode(data.http.fetch_weather.response_body)
 
-  location_id      = local.location_data[0].woeid
-  weather_base_url = "https://www.metaweather.com/api/location"
-  weather_url      = var.date != null ? "${local.weather_base_url}/${local.location_id}/${var.date}" : "${local.weather_base_url}/${local.location_id}/"
+  weather_temp        = local.weather_data.current["temperature_2m"]
+  weather_description = local.weather_data.current["weather_code"]
 
-  location_data         = jsondecode(data.http.fetch_weather_location.body)
-  full_weather_data     = jsondecode(data.http.fetch_weather.body)
-  selected_weather_data = var.date != null ? local.full_weather_data[0] : local.full_weather_data.consolidated_weather[0]
-
-  weather_temp        = floor((local.selected_weather_data.the_temp * 1.8) + 32)
-  weather_description = local.selected_weather_data.weather_state_name
-
-  location_response = jsondecode(data.http.fetch_location.body)
+  location_response = jsondecode(data.http.fetch_location.response_body)
   location_map = {
     lat     = local.location_response["lat"],
     lon     = local.location_response["lon"],
@@ -27,7 +20,39 @@ locals {
     {
       users_location      = local.location_str
       weather_temp        = local.weather_temp
-      weather_description = local.weather_description
-      weather_date        = local.selected_weather_data.applicable_date
+      weather_description = local.wmo_weather_codes[local.weather_description]
+      weather_date        = local.weather_data.current["time"]
   })
+
+
+  wmo_weather_codes = {
+    "0"  = "Clear sky"
+    "1"  = "Mainly clear, partly cloudy, and overcast"
+    "2"  = "Mainly clear, partly cloudy, and overcast"
+    "3"  = "Mainly clear, partly cloudy, and overcast"
+    "45" = "Fog and depositing rime fog"
+    "48" = "Fog and depositing rime fog"
+    "51" = "Drizzle: Light, moderate, and dense intensity"
+    "53" = "Drizzle: Light, moderate, and dense intensity"
+    "55" = "Drizzle: Light, moderate, and dense intensity"
+    "56" = "Freezing Drizzle: Light and dense intensity"
+    "57" = "Freezing Drizzle: Light and dense intensity"
+    "61" = "Rain: Slight, moderate and heavy intensity"
+    "63" = "Rain: Slight, moderate and heavy intensity"
+    "65" = "Rain: Slight, moderate and heavy intensity"
+    "66" = "Freezing Rain: Light and heavy intensity"
+    "67" = "Freezing Rain: Light and heavy intensity"
+    "71" = "Snow fall: Slight, moderate, and heavy intensity"
+    "73" = "Snow fall: Slight, moderate, and heavy intensity"
+    "75" = "Snow fall: Slight, moderate, and heavy intensity"
+    "77" = "Snow grains"
+    "80" = "Rain showers: Slight, moderate, and violent"
+    "81" = "Rain showers: Slight, moderate, and violent"
+    "82" = "Rain showers: Slight, moderate, and violent"
+    "85" = "Snow showers slight and heavy"
+    "86" = "Snow showers slight and heavy"
+    "95" = "Thunderstorm: Slight or moderate"
+    "96" = "Thunderstorm with slight and heavy hail"
+    "99" = "Thunderstorm with slight and heavy hail"
+  }
 }

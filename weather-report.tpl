@@ -1,3 +1,4 @@
+
 === Your Weather Report ===
 ============================
 Location:    ${users_location}
